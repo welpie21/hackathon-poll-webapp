@@ -7,7 +7,7 @@ import { A } from "@solidjs/router";
 export function NavbarAvatar() {
 
 	// const { client } = useSurreal();
-	const { user } = useAuth();
+	const { user, logout } = useAuth();
 
 	return (
 		<DropdownMenu placement="left-start">
@@ -19,12 +19,21 @@ export function NavbarAvatar() {
 				</Avatar>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent class="w-48">
-				<DropdownMenuItem>
-					<A class="w-full" href="/signin">Signin</A>
-				</DropdownMenuItem>
-				<DropdownMenuItem>
-					<A class="w-full" href="/signup">Signup</A>
-				</DropdownMenuItem>
+				<Show 
+					when={!user()}
+					fallback={
+						<DropdownMenuItem onClick={logout}>
+							Logout
+						</DropdownMenuItem>
+					}
+				>
+					<DropdownMenuItem>
+						<A class="w-full" href="/signin">Signin</A>
+					</DropdownMenuItem>
+					<DropdownMenuItem>
+						<A class="w-full" href="/signup">Signup</A>
+					</DropdownMenuItem>
+				</Show>
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);

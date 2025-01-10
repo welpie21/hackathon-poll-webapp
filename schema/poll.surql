@@ -1,6 +1,4 @@
-DEFINE TABLE poll SCHEMAFULL
-	PERMISSIONS FOR update, delete
-		WHERE creator = $auth.id;
+DEFINE TABLE poll SCHEMAFULL PERMISSIONS FULL;
 
 -- Title of the poll
 DEFINE FIELD title ON poll TYPE string;

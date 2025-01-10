@@ -102,6 +102,9 @@ export function AuthProvider(props: ParentProps) {
 		await close();
 		await connect();
 
+		localStorage.removeItem("token");
+		
+		setStore("user", undefined);
 		setStore("status", "signed-out");
 	};
 

@@ -6,7 +6,7 @@ DEFINE ACCESS user ON DATABASE TYPE RECORD
 
 DEFINE TABLE user SCHEMAFULL
 	PERMISSIONS FOR select, update, delete
-		WHERE $access = "users"
+		WHERE $access = "user"
 		AND id = $auth.id
 ;
 
