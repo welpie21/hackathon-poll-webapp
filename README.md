@@ -1,4 +1,4 @@
-# SurrealPolls – Your Gateway to Instant Opinions!
+# SurrealPolls 🗳️– Your Gateway to Instant Opinions!
 
 Welcome to **SurrealPolls**, where gathering votes and making decisions has never been easier (or more fun)! Whether you’re planning a group outing, running a class survey, or settling the eternal "pineapple on pizza" debate, we’ve got you covered. 
 
