@@ -2,7 +2,7 @@
 
 Welcome to **SurrealPolls**, where gathering votes and making decisions has never been easier (or more fun)! Whether you’re planning a group outing, running a class survey, or settling the eternal "pineapple on pizza" debate, we’ve got you covered. 
 
-Built with cutting-edge technologies like **SolidJS**, **SurrealDB**, and **Tailwind CSS**, this app is as modern as your need for instant polls.
+Built with cutting-edge technologies like **SolidJS**, **Vite**, **SurrealDB**, **Surreal Cloud**, and **Tailwind CSS**, this app is as modern as your need for instant polls.
 
 ---
 
@@ -11,7 +11,9 @@ Built with cutting-edge technologies like **SolidJS**, **SurrealDB**, and **Tail
 ### **Tech Stack Highlights**:
 - **SolidJS**: Super snappy frontend framework for blazing-fast performance and reactivity. Your votes will feel instant, and your app will feel buttery smooth.
 - **Tailwind CSS**: Your app is not just functional; it’s also pretty, thanks to this utility-first CSS framework.
-- **SurrealDB**: A futuristic database that handles our polls and votes like a pro. No need to worry about scalability or performance—we’ve got this covered.
+- **Surreal Cloud**: Surreal Cloud (Beta) transforms the database experience, providing the power and versatility of SurrealDB without the complexity of managing infrastructure. 
+
+
 
 ---
 
@@ -52,12 +54,23 @@ Ready to dive in? Let’s go!
    npm install
    ```
 
-3. Start the SurrealDB database:
-   ```bash
-   surreal start --log debug --user root --pass root memory
-   ```
+3. Connect to a SurrealDB Cloud Instance via CLI:
 
-4. Apply the schema: Use the included Makefile to set up your database schema:
+    When you have a SurrealDB Cloud instance running, you can [connect to it using the SurrealDB CLI](https://surrealdb.com/docs/cloud/connect/cli) and this will give you an endpoint to use in the make file.  
+
+    Copy the endpoint without the `surreal sql` prefix as you will be making an import into the database.
+
+    ```bash
+   --endpoint <endpoint> --token <token>
+    ```
+ > We recommend using [Surrealist](https://surrealist.dev) the GUI for SurrealDB Cloud to manage and create your database users. 
+
+4.  Create a database user in the Authentication section of Surrealist as you will need to use the username and password to connect to the database from the frontend.
+
+4. Mirroring  the `.env.example` file, create an `.env` file in the root of the project and set the `VITE_DB_HOST` and `DB_TOKEN` to the endpoint and token you copied from the CLI. Then, set the `VITE_DB_USER` to `root` and `VITE_DB_PASS` to `root`. 
+
+
+5. Apply the schema: Use the included Makefile to set up your database schema:
     ```bash
     make apply
     ```
@@ -93,6 +106,7 @@ Here’s how this masterpiece is organized:
 |   |-- index.tsx       # Entry point of the app
 |   |-- routes.tsx      # App routes
 |-- /public             # Public files (e.g., favicon)
+|-- /.env.example       # Example env file
 |-- Makefile            # For schema management
 |-- tailwind.config.js  # Tailwind configuration
 |-- vite.config.ts      # Vite configuration
