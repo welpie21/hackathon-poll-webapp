@@ -6,7 +6,7 @@ export function Navbar() {
 	const { client } = useSurreal();
 
 	return (
-		<header>
+		<header class="p-4 flex">
 			<NavbarAvatar />
 		</header>
 	)
