@@ -12,6 +12,7 @@ import PollResults from './pages/PollResults';
 import { AppLayout } from './components/layout/app';
 import { Signin } from './pages/Signin';
 import { Signup } from './pages/Signup';
+import { Toaster } from './components/ui/toast';
 
 const App: Component = () => {
 	return (
@@ -35,6 +36,7 @@ const App: Component = () => {
 							<Route path="/signup" component={Signup} />
 						</Route>
 					</Router>
+					<Toaster />
 				</AuthProvider>
 			</SurrealProvider>
 		</QueryClientProvider>

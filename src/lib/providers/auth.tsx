@@ -1,4 +1,4 @@
-import { Accessor, createContext, ParentProps, useContext } from "solid-js";
+import { Accessor, createContext, onMount, ParentProps, useContext } from "solid-js";
 import { createStore } from "solid-js/store";
 import { UserRecord } from "~/types/user";
 import { useSurreal } from "./surrealdb";
@@ -19,10 +19,10 @@ const AuthContext = createContext<AuthProviderState>();
 
 export function AuthProvider(props: ParentProps) {
 
-	const { 
-		client, 
-		close, 
-		connect 
+	const {
+		client,
+		close,
+		connect
 	} = useSurreal();
 
 	const [store, setStore] = createStore<AuthProviderStore>({
@@ -30,67 +30,92 @@ export function AuthProvider(props: ParentProps) {
 		status: "idle"
 	});
 
-	const login = async (email: string, password: string) => {
+	onMount(async () => {
 		const db = client();
+		const token = localStorage.getItem("token");
+
+		if (!token) {
+			return;
+		}
 		
-		setStore("status", "signing-in");
+		await db.ready;
+		await db.authenticate(token);
+		const user = await db.info();
 
-		await db.signin({ 
-			access: "user",
-			namespace: "surrealdb",
-			database: "pollwebapp",
-			variables: {
-				email: email,
-				pass: password
-			}
-		});
+		if (user) {
+			setStore("user", user);
+		}
+	});
 
-		setStore("status", "signed-up");
-	};
+const login = async (email: string, password: string) => {
+	const db = client();
 
-	const register = async (data: Omit<UserRecord, "id">) => {
-		const db = client();
+	setStore("status", "signing-in");
 
-		setStore("status", "signing-up");
+	const token = await db.signin({
+		username: email,
+		password: password,
+		// variables: {
+		// 	email: email,
+		// 	pass: password
+		// }
+	});
 
-		await db.signup({
-			access: "user",
-			namespace: "surrealdb",
-			database: "pollwebapp",
-			variables: data
-		}); 
+	localStorage.setItem("token", token);
 
-		setStore("status", "signed-up");
-	};
+	const user = await db.info();
+	console.log(user);
 
-	const logout = async () => {
+	if (user) {
+		setStore("user", user);
+	}
 
-		setStore("status", "signing-out");
+	setStore("status", "signed-up");
+};
 
-		await close();
-		await connect();
+const register = async (data: Omit<UserRecord, "id">) => {
+	const db = client();
 
-		setStore("status", "idle");
-	};
+	setStore("status", "signing-up");
 
-	const providerValue: AuthProviderState = {
-		user: () => store.user,
-		login,
-		register,
-		logout
-	};
+	await db.signup({
+		access: "user",
+		namespace: "surrealdb",
+		database: "pollwebapp",
+		variables: data
+	});
 
-	return (
-		<AuthContext.Provider value={providerValue}>
-			{props.children}
-		</AuthContext.Provider>
-	);
+	setStore("status", "signed-up");
+};
+
+const logout = async () => {
+
+	setStore("status", "signing-out");
+
+	await close();
+	await connect();
+
+	setStore("status", "idle");
+};
+
+const providerValue: AuthProviderState = {
+	user: () => store.user,
+	login,
+	register,
+	logout
+};
+
+return (
+	<AuthContext.Provider value={providerValue}>
+		{props.children}
+	</AuthContext.Provider>
+);
 }
 
 export function useAuth(): AuthProviderState {
 	const ctx = useContext(AuthContext);
 
-	if(!ctx) {
+	if (!ctx) {
 		throw new Error("useAuth must be used within an AuthProvider");
 	}
 
