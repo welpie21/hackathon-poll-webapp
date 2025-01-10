@@ -16,3 +16,6 @@ DEFINE FIELD email ON TABLE user TYPE string
   ASSERT string::is::email($value)
   -- Make sure the email is unique
   VALUE string::lowercase($value);
+
+DEFINE FIELD name ON TABLE user TYPE string;
+DEFINE FIELD password ON TABLE user TYPE string;

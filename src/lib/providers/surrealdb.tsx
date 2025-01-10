@@ -1,4 +1,4 @@
-import { useContext, createContext, JSX, createSignal, createEffect, onCleanup, Accessor } from "solid-js";
+import { useContext, createContext, JSX, createSignal, createEffect, onCleanup, Accessor, onMount } from "solid-js";
 import Surreal from "surrealdb";
 import { createMutation } from "@tanstack/solid-query";
 import { createStore } from "solid-js/store";
@@ -34,25 +34,28 @@ interface SurrealProviderState {
 
 interface SurrealProviderStore {
 	instance: Surreal;
+	status: "connecting" | "connected" | "disconnected";
 }
 
 const SurrealContext = createContext<SurrealProviderState>();
 
 export function SurrealProvider(props: SurrealProviderProps) {
 
-	const [store] = createStore<SurrealProviderStore>({ 
-		instance: props.client ?? new Surreal()
-	})
+	const [store, setStore] = createStore<SurrealProviderStore>({ 
+		instance: props.client ?? new Surreal(),
+		status: "disconnected"
+	});
 
 	const { 
 		mutateAsync: connect,
-		isPending,
-		isSuccess,
 		isError,
 		error,
 		reset
 	} = createMutation(() => ({
-		mutationFn: () => store.instance.connect(props.endpoint, props.params)
+		mutationFn: async () => {
+			setStore("status", "connecting");
+			await store.instance.connect(props.endpoint, props.params);
+		}
 	}));
 
 	createEffect(() => {
@@ -64,6 +67,17 @@ export function SurrealProvider(props: SurrealProviderProps) {
 		onCleanup(() => {
 			reset();
 			store.instance.close();
+		});
+	});
+
+	onMount(() => {
+
+		store.instance.emitter.subscribe("connected", () => {
+			setStore("status", "connected");
+		});
+
+		store.instance.emitter.subscribe("disconnected", () => {
+			setStore("status", "disconnected");
 		});
 	});
 
@@ -84,6 +98,12 @@ export function SurrealProvider(props: SurrealProviderProps) {
 	);
 }
 
-export function useSurreal() {
-	return useContext(SurrealContext);
+export function useSurreal(): SurrealProviderState {
+	const context = useContext(SurrealContext);
+	
+	if(!context) {
+		throw new Error("useSurreal must be used within a SurrealProvider");
+	}
+
+	return context;
 }
