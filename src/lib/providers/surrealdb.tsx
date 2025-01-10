@@ -1,0 +1,89 @@
+import { useContext, createContext, JSX, createSignal, createEffect, onCleanup, Accessor } from "solid-js";
+import Surreal from "surrealdb";
+import { createMutation } from "@tanstack/solid-query";
+import { createStore } from "solid-js/store";
+
+interface SurrealProviderProps {
+	children: JSX.Element;
+	/** The database endpoint URL */
+	endpoint: string;
+	/** Optional existing Surreal client */
+	client?: Surreal;
+	/* Optional connection parameters */
+	params?: Parameters<Surreal["connect"]>[1];
+	/** Auto connect on component mount, defaults to true */
+	autoConnect?: boolean;
+}
+
+interface SurrealProviderState {
+	/** The Surreal instance */
+	client: Accessor<Surreal>;
+	/** Whether the connection is pending */
+	isConnecting: Accessor<boolean>;
+	/** Whether the connection was successfully established */
+	isSuccess: Accessor<boolean>;
+	/** Whether the connection rejected in an error */
+	isError: Accessor<boolean>;
+	/** The connection error, if present */
+	error: Accessor<unknown|null>;
+	/** Connect to the Surreal instance */
+	connect: () => Promise<true>;
+	/** Close the Surreal instance */
+	close: () => Promise<true>;
+}
+
+interface SurrealProviderStore {
+	instance: Surreal;
+}
+
+const SurrealContext = createContext<SurrealProviderState>();
+
+export function SurrealProvider(props: SurrealProviderProps) {
+
+	const [store] = createStore<SurrealProviderStore>({ 
+		instance: props.client ?? new Surreal()
+	})
+
+	const { 
+		mutateAsync: connect,
+		isPending,
+		isSuccess,
+		isError,
+		error,
+		reset
+	} = createMutation(() => ({
+		mutationFn: () => store.instance.connect(props.endpoint, props.params)
+	}));
+
+	createEffect(() => {
+
+		if(props.autoConnect) {
+			connect();
+		}
+
+		onCleanup(() => {
+			reset();
+			store.instance.close();
+		});
+	});
+
+	const providerValue: SurrealProviderState = {
+		client: () => store.instance,
+		close: () => store.instance.close(),
+		connect,
+		error: () => error,
+		isConnecting: () => isPending,
+		isError: () => isError,
+		isSuccess: () => isSuccess
+	}
+
+	return (
+		<SurrealContext.Provider value={providerValue}>
+			{props.children}
+		</SurrealContext.Provider>
+	);
+}
+
+export function useSurreal() {
+	return useContext(SurrealContext);
+}
