@@ -8,4 +8,5 @@ export type Poll = {
 
 export type PollPayload = {
 	title: string;
+	questions: string[];
 };

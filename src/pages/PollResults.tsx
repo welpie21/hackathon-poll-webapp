@@ -3,6 +3,7 @@ import { useParams } from '@solidjs/router';
 
 const PollResults: Component = () => {
 	const params = useParams();
+	
 
 	return (
 		<div class="container mx-auto p-4">

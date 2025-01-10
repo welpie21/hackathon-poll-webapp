@@ -49,8 +49,7 @@ export function SurrealProvider(props: SurrealProviderProps) {
 	const { 
 		mutateAsync,
 		isError,
-		error,
-		reset
+		error
 	} = createMutation(() => ({
 		mutationFn: async () => {
 			setStore("status", "connecting");
@@ -58,19 +57,11 @@ export function SurrealProvider(props: SurrealProviderProps) {
 		}
 	}));
 
-	createEffect(() => {
+	onMount(() => {
 
 		if(props.autoConnect) {
 			mutateAsync();
 		}
-
-		onCleanup(() => {
-			reset();
-			store.instance.close();
-		});
-	});
-
-	onMount(() => {
 
 		store.instance.emitter.subscribe("connected", () => {
 			setStore("status", "connected");
@@ -93,7 +84,7 @@ export function SurrealProvider(props: SurrealProviderProps) {
 
 	return (
 		<SurrealContext.Provider value={providerValue}>
-			{props.children}
+			{store.status === "connected" && props.children}
 		</SurrealContext.Provider>
 	);
 }
