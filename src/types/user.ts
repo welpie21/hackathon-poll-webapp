@@ -4,5 +4,5 @@ export interface UserRecord {
 	id: RecordId;
 	name: string;
 	email: string;
-	password: string;
+	pass: string;
 }

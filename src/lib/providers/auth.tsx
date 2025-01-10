@@ -58,7 +58,7 @@ export function AuthProvider(props: ParentProps) {
 			namespace: "surrealdb",
 			database: "pollwebapp",
 			variables: data
-		});
+		}); 
 
 		setStore("status", "signed-up");
 	};

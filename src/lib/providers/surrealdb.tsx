@@ -27,7 +27,7 @@ interface SurrealProviderState {
 	/** The connection error, if present */
 	error: Accessor<unknown|null>;
 	/** Connect to the Surreal instance */
-	connect: () => Promise<true>;
+	connect: () => Promise<void>;
 	/** Close the Surreal instance */
 	close: () => Promise<true>;
 }
@@ -47,7 +47,7 @@ export function SurrealProvider(props: SurrealProviderProps) {
 	});
 
 	const { 
-		mutateAsync: connect,
+		mutateAsync,
 		isError,
 		error,
 		reset
@@ -61,7 +61,7 @@ export function SurrealProvider(props: SurrealProviderProps) {
 	createEffect(() => {
 
 		if(props.autoConnect) {
-			connect();
+			mutateAsync();
 		}
 
 		onCleanup(() => {
@@ -84,12 +84,12 @@ export function SurrealProvider(props: SurrealProviderProps) {
 	const providerValue: SurrealProviderState = {
 		client: () => store.instance,
 		close: () => store.instance.close(),
-		connect,
+		connect: mutateAsync,
 		error: () => error,
-		isConnecting: () => isPending,
+		isConnecting: () => store.status === "connecting",
 		isError: () => isError,
-		isSuccess: () => isSuccess
-	}
+		isSuccess: () => store.status === "connected"
+	};
 
 	return (
 		<SurrealContext.Provider value={providerValue}>

@@ -1,5 +1,5 @@
 import type { Component } from 'solid-js';
-import { Router, Routes, Route } from "@solidjs/router";
+import { Router, Route } from "@solidjs/router";
 import { SurrealProvider } from './lib/providers/surrealdb';
 import { QueryClientProvider } from '@tanstack/solid-query';
 import { tanstackClient } from './lib/query-client';
@@ -9,26 +9,33 @@ import Home from './pages/Home';
 import CreatePoll from './pages/CreatePoll';
 import VotePoll from './pages/VotePoll';
 import PollResults from './pages/PollResults';
+import { AppLayout } from './components/layout/app';
+import { Signin } from './pages/Signin';
+import { Signup } from './pages/Signup';
 
 const App: Component = () => {
 	return (
 		<QueryClientProvider client={tanstackClient}>
 			<SurrealProvider
-				endpoint='http://127.0.0.1:8000'
+				endpoint={import.meta.env.VITE_DB_HOST}
 				autoConnect
+				params={{
+					namespace: "surrealdb",
+					database: "pollwebapp",
+				}}
 			>
 				<AuthProvider>
-					<Navbar />
+					<Router>
+						<Route path="/" component={AppLayout}>
+							<Route path="/" component={Home} />
+							<Route path="/create" component={CreatePoll} />
+							<Route path="/poll/:id" component={VotePoll} />
+							<Route path="/poll/:id/results" component={PollResults} />
+							<Route path="/signin" component={Signin} />
+							<Route path="/signup" component={Signup} />
+						</Route>
+					</Router>
 				</AuthProvider>
-				<Navbar />
-				<Router>
-					<Routes>
-						<Route path="/" component={Home} />
-						<Route path="/create" component={CreatePoll} />
-						<Route path="/poll/:id" component={VotePoll} />
-						<Route path="/poll/:id/results" component={PollResults} />
-					</Routes>
-				</Router>
 			</SurrealProvider>
 		</QueryClientProvider>
 	);

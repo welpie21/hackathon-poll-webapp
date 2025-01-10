@@ -10,7 +10,7 @@ export function NavbarAvatar() {
 	const { user } = useAuth();
 
 	return (
-		<DropdownMenu placement="left">
+		<DropdownMenu placement="left-start">
 			<DropdownMenuTrigger>
 				<Avatar>
 					<AvatarFallback>
@@ -20,10 +20,10 @@ export function NavbarAvatar() {
 			</DropdownMenuTrigger>
 			<DropdownMenuContent class="w-48">
 				<DropdownMenuItem>
-					<A href="/signin">Signin</A>
+					<A class="w-full" href="/signin">Signin</A>
 				</DropdownMenuItem>
 				<DropdownMenuItem>
-					<A href="/signup">Signup</A>
+					<A class="w-full" href="/signup">Signup</A>
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>
