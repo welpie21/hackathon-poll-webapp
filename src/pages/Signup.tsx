@@ -1,8 +1,11 @@
 import { useNavigate } from "@solidjs/router";
 import { createSignal, JSX } from "solid-js";
+import { SubmitButton } from "~/components/Button/submit-button";
+import { TextInput } from "~/components/Input/text-field";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { TextField, TextFieldInput, TextFieldLabel } from "~/components/ui/text-field";
+import { useActionAsync } from "~/lib/primitives/use-action";
 import { useAuth } from "~/lib/providers/auth";
 
 export function Signup(): JSX.Element {
@@ -16,30 +19,26 @@ export function Signup(): JSX.Element {
 	const [confirmPassword, setConfirmPassword] = createSignal("");
 	const [error, setError] = createSignal<string>();
 
-	const handleSubmit = async () => {
+	const handleSubmit = useActionAsync(async () => {
 
 		if(password() !== confirmPassword()) {
 			setError("Passwords do not match");
 			return;
 		}
 
-		try {
-			await register({ 
-				name: name(),
-				email: email(),
-				pass: password(),
-			});
+		await register({ 
+			name: name(),
+			email: email(),
+			pass: password(),
+		});
 
-			navigate("/signin");
-		} catch(e) {
-			setError("An error occurred while creating your account");
-		}
-	}
+		navigate("/signin");
+	});
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>
+		<Card class="max-w-lg mx-auto mt-24 border-t-4 border-t-accent">
+			<CardHeader class="text-center mb-8">
+				<CardTitle class="text-2xl">
 					Signup for an account
 				</CardTitle>
 				<CardDescription>
@@ -47,49 +46,35 @@ export function Signup(): JSX.Element {
 				</CardDescription>
 			</CardHeader>
 			<CardContent class="flex flex-col gap-y-8">
-				<TextField>
-					<TextFieldLabel>
-						Name
-					</TextFieldLabel>
-					<TextFieldInput 
-						value={name()} 
-						type="text" 
-						onChange={(e) => setName(e.target.value)} 
-					/>
-				</TextField>
-				<TextField>
-					<TextFieldLabel>
-						Email
-					</TextFieldLabel>
-					<TextFieldInput 
-						value={email()}
-						type="email" 
-						onChange={(e) => setEmail(e.target.value)}
-					/>
-				</TextField>
-				<TextField>
-					<TextFieldLabel>
-						Password
-					</TextFieldLabel>
-					<TextFieldInput
-						value={password()} 
-						type="password" 
-						onChange={(e) => setPassword(e.target.value)}
-					/>
-				</TextField>
-				<TextField>
-					<TextFieldLabel>
-						Confirm Password
-					</TextFieldLabel>
-					<TextFieldInput
-						value={confirmPassword()} 
-						type="password" 
-						onChange={(e) => setConfirmPassword(e.target.value)}
-					/>
-				</TextField>
-				<Button onClick={handleSubmit}>
+				<TextInput 
+					label="Name"
+					value={name()}
+					onChange={setName}
+				/>
+				<TextInput 
+					label="Email"
+					value={email()}
+					onChange={setEmail}
+				/>
+				<TextInput
+					label="Password"
+					value={password()}
+					type="password"
+					onChange={setPassword}
+				/>
+				<TextInput
+					label="Confirm Password"
+					value={confirmPassword()}
+					type="password"
+					onChange={setConfirmPassword}
+				/>
+				<SubmitButton 
+					submitting={handleSubmit.loading()} 
+					variant="accent" 
+					onClick={handleSubmit}
+				>
 					Signup
-				</Button>
+				</SubmitButton>
 			</CardContent>
 		</Card>
 	);

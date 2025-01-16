@@ -1,3 +1,2 @@
-DEFINE TABLE pollQuestion SCHEMAFULL;
-
+DEFINE TABLE pollQuestion SCHEMAFULL PERMISSIONS FULL;
 DEFINE FIELD question ON pollQuestion TYPE string;

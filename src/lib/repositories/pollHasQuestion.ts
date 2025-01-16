@@ -1,12 +1,19 @@
-import Surreal, { RecordId, StringRecordId } from "surrealdb";
+import Surreal, { RecordId } from "surrealdb";
 import { Poll } from "~/types/poll";
 import { PollHasQuestion } from "~/types/pollHasQuestion";
+import { POLL_HAS_QUESTION_TABLE } from "../tables";
 
 export async function relatePollToQuestions(
 	db: Surreal,
 	poll: Poll,
-	questions: RecordId<"pollQuestion">[]
-): Promise<PollHasQuestion[]> {
-	const id = new StringRecordId(poll.id);
-	return await db.relate(id, "pollHasQuestion", questions) as PollHasQuestion[];
+	question: RecordId<"pollQuestion">
+): Promise<PollHasQuestion> {
+
+	const [relation] = await db.relate<PollHasQuestion>(
+		poll.id, 
+		POLL_HAS_QUESTION_TABLE, 
+		question
+	);
+
+	return relation;
 }

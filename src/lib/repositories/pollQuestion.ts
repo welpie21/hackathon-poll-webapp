@@ -1,25 +1,15 @@
 import Surreal from "surrealdb";
-import { Poll } from "~/types/poll";
 import { PollQuestion } from "~/types/pollQuestion";
+import { POLL_QUESTION_TABLE } from "../tables";
 
-export async function createPollQuestions(
+export async function* createPollQuestions(
 	db: Surreal,
 	data: string[]
-): Promise<PollQuestion[]> {
-	const questions = await db.insert("pollQuestion", data.map((question) => ({ question })));
-	return questions as unknown as PollQuestion[];
-}
-
-export async function getPollQuestions(
-	db: Surreal,
-	poll: Poll
-): Promise<PollQuestion[]> {
-
-	const [questions] = await db.query(`
-		SELECT VALUE ->pollHasQuestion->pollQuestion as questions
-		FROM ONLY $id
-		FETCH questions
-	`, { id: poll.id });
-
-	return questions as PollQuestion[];
+): AsyncGenerator<PollQuestion> {
+	for await (const question of data) {
+		yield await db.create<PollQuestion, Pick<PollQuestion, "question">>(
+			POLL_QUESTION_TABLE,
+			{ question }
+		).then(([question]) => question);
+	}
 }

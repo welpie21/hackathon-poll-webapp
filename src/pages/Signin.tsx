@@ -1,5 +1,6 @@
 import { useNavigate } from "@solidjs/router";
 import { createSignal, JSX } from "solid-js";
+import { TextInput } from "~/components/Input/text-field";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { TextField, TextFieldInput, TextFieldLabel } from "~/components/ui/text-field";
@@ -18,46 +19,41 @@ export function Signin(): JSX.Element {
 		try {
 			await login(email(), password());
 			navigate("/");
-		} catch(e) {
+		} catch (e) {
 			console.error(e);
 		}
 	};
 
 	return (
-		<Card>
-		<CardHeader>
-			<CardTitle>
-				Signup for an account
-			</CardTitle>
-			<CardDescription>
-				Enter your email and password to create an account
-			</CardDescription>
-		</CardHeader>
-		<CardContent class="flex flex-col gap-y-8">
-			<TextField>
-				<TextFieldLabel>
-					Email
-				</TextFieldLabel>
-				<TextFieldInput 
+		<Card class="max-w-lg mx-auto mt-24 border-t-4 border-t-accent">
+			<CardHeader class="text-center mb-8">
+				<CardTitle class="text-2xl">
+					Signin to your account
+				</CardTitle>
+				<CardDescription>
+					Enter your email and password to signin to your account.
+				</CardDescription>
+			</CardHeader>
+			<CardContent class="flex flex-col gap-y-8">
+				<TextInput
+					label="Email"
 					value={email()}
-					type="email" 
-					onChange={(e) => setEmail(e.target.value)}
+					onChange={setEmail}
 				/>
-			</TextField>
-			<TextField>
-				<TextFieldLabel>
-					Password
-				</TextFieldLabel>
-				<TextFieldInput
-					value={password()} 
-					type="password" 
-					onChange={(e) => setPassword(e.target.value)}
-				/>
-			</TextField>
-			<Button onClick={handleSubmit}>
-				Signin
-			</Button>
-		</CardContent>
-	</Card>
+				<TextField>
+					<TextFieldLabel>
+						Password
+					</TextFieldLabel>
+					<TextFieldInput
+						value={password()}
+						type="password"
+						onChange={(e) => setPassword(e.target.value)}
+					/>
+				</TextField>
+				<Button variant="accent" onClick={handleSubmit}>
+					Signin
+				</Button>
+			</CardContent>
+		</Card>
 	);
 }

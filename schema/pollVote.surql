@@ -1,5 +1,3 @@
 DEFINE TABLE pollVote SCHEMAFULL 
-	TYPE RELATION 
-		IN user 
-		OUT pollQuestion;
+	TYPE RELATION IN user OUT pollQuestion;
 

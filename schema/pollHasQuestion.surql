@@ -1,4 +1,3 @@
-DEFINE TABLE pollHasQuestion SCHEMAFULL 
-	TYPE RELATION
-		IN poll
-		OUT question;
+DEFINE TABLE pollHasQuestion SCHEMAFULL
+	PERMISSIONS FULL
+	TYPE RELATION IN poll OUT pollQuestion;

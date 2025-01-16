@@ -1,6 +1,5 @@
-import { useContext, createContext, JSX, createSignal, createEffect, onCleanup, Accessor, onMount } from "solid-js";
+import { useContext, createContext, JSX, Accessor, onMount, Show } from "solid-js";
 import Surreal from "surrealdb";
-import { createMutation } from "@tanstack/solid-query";
 import { createStore } from "solid-js/store";
 
 interface SurrealProviderProps {
@@ -22,19 +21,15 @@ interface SurrealProviderState {
 	isConnecting: Accessor<boolean>;
 	/** Whether the connection was successfully established */
 	isSuccess: Accessor<boolean>;
-	/** Whether the connection rejected in an error */
-	isError: Accessor<boolean>;
-	/** The connection error, if present */
-	error: Accessor<unknown|null>;
 	/** Connect to the Surreal instance */
-	connect: () => Promise<void>;
+	connect: () => Promise<true>;
 	/** Close the Surreal instance */
 	close: () => Promise<true>;
 }
 
 interface SurrealProviderStore {
 	instance: Surreal;
-	status: "connecting" | "connected" | "disconnected";
+	status: "connecting" | "connected" | "disconnected" | undefined;
 }
 
 const SurrealContext = createContext<SurrealProviderState>();
@@ -43,25 +38,10 @@ export function SurrealProvider(props: SurrealProviderProps) {
 
 	const [store, setStore] = createStore<SurrealProviderStore>({ 
 		instance: props.client ?? new Surreal(),
-		status: "disconnected"
+		status: undefined
 	});
 
-	const { 
-		mutateAsync,
-		isError,
-		error
-	} = createMutation(() => ({
-		mutationFn: async () => {
-			setStore("status", "connecting");
-			await store.instance.connect(props.endpoint, props.params);
-		}
-	}));
-
-	onMount(() => {
-
-		if(props.autoConnect) {
-			mutateAsync();
-		}
+	onMount(async () => {
 
 		store.instance.emitter.subscribe("connected", () => {
 			setStore("status", "connected");
@@ -70,21 +50,29 @@ export function SurrealProvider(props: SurrealProviderProps) {
 		store.instance.emitter.subscribe("disconnected", () => {
 			setStore("status", "disconnected");
 		});
+
+		store.instance.emitter.subscribe("connecting", () => {
+			setStore("status", "connecting");
+		});
+
+		if(props.autoConnect) {
+			await store.instance.connect(props.endpoint, props.params);
+		}
 	});
 
 	const providerValue: SurrealProviderState = {
 		client: () => store.instance,
 		close: () => store.instance.close(),
-		connect: mutateAsync,
-		error: () => error,
+		connect: () => store.instance.connect(props.endpoint, props.params),
 		isConnecting: () => store.status === "connecting",
-		isError: () => isError,
 		isSuccess: () => store.status === "connected"
 	};
 
 	return (
 		<SurrealContext.Provider value={providerValue}>
-			{store.status === "connected" && props.children}
+			<Show when={store.status}>
+				{props.children}
+			</Show>
 		</SurrealContext.Provider>
 	);
 }

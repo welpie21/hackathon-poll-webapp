@@ -1,6 +1,6 @@
 import { RecordId } from "surrealdb";
 
-export interface PollQuestion {
+export type PollQuestion = {
 	id: RecordId<"pollQuestion">;
 	question: string;
 }

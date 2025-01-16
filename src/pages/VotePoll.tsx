@@ -4,11 +4,10 @@ import { useSurreal } from '~/lib/providers/surrealdb';
 import { RecordId } from 'surrealdb';
 import { Poll } from '~/types/poll';
 import { PollQuestion } from '~/types/pollQuestion';
-import { getPollQuestions } from '~/lib/repositories/pollQuestion';
-import { getPoll } from '~/lib/repositories/poll';
 import { PollQuestionRow } from '~/components/Vote';
 import { votePollQuestion } from '~/lib/repositories/pollVote';
 import { useAuth } from '~/lib/providers/auth';
+import { fetchPoll, isPollValid } from '~/lib/repositories/poll';
 
 const VotePoll: Component = () => {
 
@@ -16,22 +15,24 @@ const VotePoll: Component = () => {
 	const { client } = useSurreal();
 	const { user } = useAuth();
 
-	const [poll, setPoll] = createSignal<Poll>();
+	const [poll, setPoll] = createSignal<Omit<Poll, "creator">>();
 	const [questions, setQuestions] = createSignal<PollQuestion[]>();
 
 	onMount(async () => {
 		const db = client();
 		await db.ready;
-		
+
 		const record = new RecordId("poll", params.id);
-		const poll = await getPoll(db, record);
+		const isValid = await isPollValid(db, record);
+
+		if(isValid === false) {
+			return;
+		}
+
+		const { questions, ...poll } = await fetchPoll(db, record);
 
 		setPoll(poll);
-
-		const questions = await getPollQuestions(db, poll);
 		setQuestions(questions);
-
-		console.log(questions);
 	});
 
 	const onVoteQuestion = async (question: PollQuestion) => {

@@ -18,19 +18,30 @@ const buttonVariants = cva(
 				outline: "border border-input hover:bg-accent hover:text-accent-foreground",
 				secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
 				ghost: "hover:bg-accent hover:text-accent-foreground",
-				link: "text-primary underline-offset-4 hover:underline"
+				link: "text-primary underline-offset-4 hover:underline",
+				accent: "bg-accent hover:bg-accent/90"
 			},
 			size: {
 				default: "h-10 px-4 py-2",
 				sm: "h-9 px-3 text-xs",
 				lg: "h-11 px-8",
 				icon: "size-10"
+			},
+			disabled: {
+				true: "opacity-50 pointer-events-none"
 			}
 		},
 		defaultVariants: {
 			variant: "default",
 			size: "default"
-		}
+		},
+		compoundVariants: [
+			{ 
+				variant: "accent",
+				disabled: true,
+				class: "bg-gray-500 text-gray-100"
+			}
+		]
 	}
 );
 
@@ -40,10 +51,11 @@ type ButtonProps<T extends ValidComponent = "button"> = ButtonPrimitive.ButtonRo
 const Button = <T extends ValidComponent = "button">(
 	props: PolymorphicProps<T, ButtonProps<T>>
 ) => {
-	const [local, others] = splitProps(props as ButtonProps, ["variant", "size", "class"]);
+	const [local, others] = splitProps(props as ButtonProps, ["variant", "size", "class", "disabled"]);
 	return (
 		<ButtonPrimitive.Root
-			class={cn(buttonVariants({ variant: local.variant, size: local.size }), local.class)}
+			class={cn(buttonVariants({ variant: local.variant, size: local.size, disabled: local.disabled }), local.class)}
+			disabled={local.disabled}
 			{...others}
 		/>
 	);

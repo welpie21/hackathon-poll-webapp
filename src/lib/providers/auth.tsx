@@ -2,6 +2,7 @@ import { Accessor, createContext, onMount, ParentProps, useContext } from "solid
 import { createStore } from "solid-js/store";
 import { UserRecord } from "~/types/user";
 import { useSurreal } from "./surrealdb";
+import Surreal from "surrealdb";
 
 interface AuthProviderState {
 	user: Accessor<UserRecord | undefined>;
@@ -30,8 +31,21 @@ export function AuthProvider(props: ParentProps) {
 		status: "idle"
 	});
 
+	const setUserDetails = async (db: Surreal) => {
+		const user = await db.info();
+
+		if (user) {
+			setStore("user", user as unknown as UserRecord);
+			setStore("status", "signed-up");
+		} else {
+			setStore("status", "signed-out");
+		}
+	};
+
 	onMount(async () => {
 		const db = client();
+		await db.ready;
+		
 		const token = localStorage.getItem("token");
 
 		if (!token) {
@@ -40,15 +54,15 @@ export function AuthProvider(props: ParentProps) {
 		}
 		
 		await db.ready;
-		await db.authenticate(token);
-		const user = await db.info();
+		const authenticated = await db.authenticate(token)
+			.catch(() => false);
 
-		if (user) {
-			setStore("user", user as unknown as UserRecord);
-			setStore("status", "signed-in");
-		} else {
+		if (!authenticated) {
 			setStore("status", "signed-out");
+			return;
 		}
+
+		setUserDetails(db);
 	});
 
 	const login = async (email: string, password: string) => {
@@ -68,16 +82,7 @@ export function AuthProvider(props: ParentProps) {
 
 		
 		localStorage.setItem("token", token);
-
-		const user = await db.info();
-		console.log(user);
-
-		if (user) {
-			setStore("user", user as unknown as UserRecord);
-			setStore("status", "signed-up");
-		} else {
-			setStore("status", "signed-out");
-		}
+		setUserDetails(db);
 	};
 
 	const register = async (data: Omit<UserRecord, "id">) => {
@@ -117,7 +122,7 @@ export function AuthProvider(props: ParentProps) {
 
 	return (
 		<AuthContext.Provider value={providerValue}>
-			{store.status !== "idle" && props.children}
+			{props.children}
 		</AuthContext.Provider>
 	);
 }
