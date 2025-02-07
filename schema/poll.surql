@@ -12,4 +12,4 @@ DEFINE FIELD closesAt ON poll TYPE option<datetime>;
 
 -- Is the poll public or private
 -- The polls can be viewed on the home page if they are public.
-DEFINE FIELD isPublic ON poll TYPE boolean;
+DEFINE FIELD isPublic ON poll TYPE bool;
